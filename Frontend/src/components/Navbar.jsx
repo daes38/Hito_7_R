@@ -1,12 +1,19 @@
-import { formatNumber } from '../utils';
+import { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { CartContext } from "../context/CartContext";
 
 const clp = (n) => n.toLocaleString("es-CL");
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const token = false;       
-  const total = 25000;       
+  const { cart } = useContext(CartContext);
+
+  // Calcula total dinámico (si no hay qty, asume 1)
+  const total = cart.reduce((acc, p) => acc + p.price * (p.qty ?? 1), 0);
+
+  // Mientra no le meto autenticación, simulo un token
+  // Cambia a `true` para probar estado "logueado"
+  const token = false;
 
   return (
     <nav className="d-flex justify-content-between align-items-center p-3 bg-light shadow-sm">

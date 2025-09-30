@@ -1,48 +1,103 @@
-import { useMemo, useState } from "react";
+import { useContext } from "react";
+import { CartContext } from "../context/CartContext";
+import "../components/cart.css";
 
 const clp = (n) => n.toLocaleString("es-CL");
 
 const Cart = () => {
-  const [cart, setCart] = useState([]); // inicia vacío
+  const { cart, setCart } = useContext(CartContext);
 
-  const inc = (id) =>
+  const increase = (id) => {
     setCart((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, count: p.count + 1 } : p))
+      prev.map((p) =>
+        p.id === id ? { ...p, qty: (p.qty ?? 1) + 1 } : p
+      )
     );
+  };
 
-  const dec = (id) =>
+  const decrease = (id) => {
     setCart((prev) =>
       prev
-        .map((p) => (p.id === id ? { ...p, count: Math.max(0, p.count - 1) } : p))
-        .filter((p) => p.count > 0)
+        .map((p) =>
+          p.id === id ? { ...p, qty: (p.qty ?? 1) - 1 } : p
+        )
+        .filter((p) => (p.qty ?? 1) > 0)
     );
+  };
 
-  const total = useMemo(
-    () => cart.reduce((acc, p) => acc + p.price * p.count, 0),
-    [cart]
-  );
+  const remove = (id) => {
+    setCart((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const clear = () => setCart([]);
+
+  const total = cart.reduce((acc, p) => acc + p.price * (p.qty ?? 1), 0);
+
+  if (!cart.length) {
+    return (
+      <div className="container py-4 cart-page">
+        <h2 className="mb-3">Tu carrito</h2>
+        <p>No tienes productos en el carrito.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mt-4">
-      <h5 className="mb-3 fw-semibold">Detalles del pedido:</h5>
+    <div className="container py-4 cart-page">
+      <h2 className="mb-3">Tu carrito</h2>
 
-      {cart.length === 0 && <p className="text-muted">Tu carrito está vacío.</p>}
+      {cart.map((p) => (
+        <div key={p.id} className="cart-row">
+          {p.img && (
+            <img
+              src={p.img}
+              alt={p.name}
+              width={72}
+              height={72}
+              className="cart-thumb"
+            />
+          )}
 
-      {cart.map((item) => (
-        <div key={item.id} className="d-flex align-items-center gap-3 py-2 border-bottom">
-          <img src={item.img} alt={item.name} width={56} height={56} className="rounded" />
-          <div className="text-capitalize flex-grow-1">{item.name}</div>
-          <div className="fw-semibold">${clp(item.price)}</div>
-          <div className="d-flex align-items-center gap-2">
-            <button className="btn btn-outline-secondary" onClick={() => dec(item.id)} aria-label="Disminuir">−</button>
-            <span className="px-2">{item.count}</span>
-            <button className="btn btn-outline-secondary" onClick={() => inc(item.id)} aria-label="Aumentar">+</button>
+          <div className="cart-name">{p.name}</div>
+
+          <div className="cart-qty">
+            <button
+              className="qty-btn qty-btn--minus"
+              onClick={() => decrease(p.id)}
+              aria-label={`Disminuir ${p.name}`}
+            >
+              −
+            </button>
+            <div className="qty-box">{p.qty ?? 1}</div>
+            <button
+              className="qty-btn qty-btn--plus"
+              onClick={() => increase(p.id)}
+              aria-label={`Aumentar ${p.name}`}
+            >
+              +
+            </button>
           </div>
+
+          <div className="cart-price">
+            ${clp(p.price * (p.qty ?? 1))}
+          </div>
+
+          <button
+            className="btn btn-sm btn-outline-danger"
+            onClick={() => remove(p.id)}
+            aria-label={`Eliminar ${p.name}`}
+          >
+            🗑️ Quitar
+          </button>
         </div>
       ))}
 
-      <h3 className="mt-4 fw-bold">Total: ${clp(total)}</h3>
-      <button className="btn btn-dark mt-3 px-4" disabled={cart.length === 0}>Pagar</button>
+      <div className="d-flex justify-content-between align-items-center mt-4">
+        <button className="btn btn-outline-secondary" onClick={clear}>
+          Vaciar carrito
+        </button>
+        <h4 className="m-0">Total: ${clp(total)}</h4>
+      </div>
     </div>
   );
 };
