@@ -1,11 +1,13 @@
 import { useContext } from "react";
 import { CartContext } from "../context/CartContext";
+import { UserContext } from "../context/UserContext";
 import "../components/cart.css";
 
 const clp = (n) => n.toLocaleString("es-CL");
 
 const Cart = () => {
   const { cart, setCart } = useContext(CartContext);
+  const { token } = useContext(UserContext);
 
   const increase = (id) => {
     setCart((prev) =>
@@ -92,11 +94,18 @@ const Cart = () => {
         </div>
       ))}
 
-      <div className="d-flex justify-content-between align-items-center mt-4">
+      <div className="d-flex justify-content-between align-items-center mt-4 gap-2">
         <button className="btn btn-outline-secondary" onClick={clear}>
           Vaciar carrito
         </button>
         <h4 className="m-0">Total: ${clp(total)}</h4>
+        <button
+          className="btn btn-primary"
+          disabled={!token}                       //  deshabilita si no hay token
+          title={token ? "" : "Inicia sesión para pagar"}
+        >
+          💳 Pagar
+        </button>
       </div>
     </div>
   );
