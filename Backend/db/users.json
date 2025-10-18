@@ -3,5 +3,20 @@
     "email": "test@test.com",
     "password": "123123",
     "id": "UYz_2Vy9rNw7uELQ7AZ8D"
+  },
+  {
+    "email": "nuevo@correo.com",
+    "password": "123123",
+    "id": "we2Y-lqqb5t9hwju6MtRL"
+  },
+  {
+    "email": "hola@hola.com",
+    "password": "123456",
+    "id": "G2URw1WWDa9c54OGwHN28"
+  },
+  {
+    "email": "daes@daes.com",
+    "password": "04110411",
+    "id": "3W-OrxHdHy6zJSqaktDJU"
   }
 ]

@@ -1,77 +1,25 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { UserContext } from "../context/UserContext";
 
-const Register = () => {
-  // Estados del formulario
+export default function RegisterPage() {
+  const { register } = useContext(UserContext);
+  const nav = useNavigate();
   const [email, setEmail] = useState("");
-  const [contraseña, setContraseña] = useState("");
-  const [confirmarContraseña, setConfirmarContraseña] = useState("");
+  const [password, setPassword] = useState("");
 
-  // Estados de feedback
-  const [error, setError] = useState("");
-  const [exito, setExito] = useState("");
-
-  const validarDatos = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    setError("");
-    setExito("");
-
-    // 1. Todos los campos obligatorios
-    if (!email.trim() || !contraseña.trim() || !confirmarContraseña.trim()) {
-      setError("Todos los campos son obligatorios.");
-      return;
-    }
-
-    // 2. Password mínimo 6 caracteres
-    if (contraseña.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres.");
-      return;
-    }
-
-    // 3. Coincidencia de password
-    if (contraseña !== confirmarContraseña) {
-      setError("Las contraseñas no coinciden.");
-      return;
-    }
-
-    // Si todo está bien
-    setExito("Registro completado con éxito 🎉");
+    await register(email, password);
+    nav("/profile", { replace: true });
   };
 
   return (
-    <form className="formulario" onSubmit={validarDatos}>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {exito && <p style={{ color: "green" }}>{exito}</p>}
-
-      <div>
-        <label>Email</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </div>
-
-      <div>
-        <label>Contraseña</label>
-        <input
-          type="password"
-          value={contraseña}
-          onChange={(e) => setContraseña(e.target.value)}
-        />
-      </div>
-
-      <div>
-        <label>Confirmar contraseña</label>
-        <input
-          type="password"
-          value={confirmarContraseña}
-          onChange={(e) => setConfirmarContraseña(e.target.value)}
-        />
-      </div>
-
-      <button type="submit">Registrarse</button>
+    <form className="container py-4" onSubmit={submit}>
+      <h2>Registro</h2>
+      <input className="form-control mb-2" type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} />
+      <input className="form-control mb-3" type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} />
+      <button className="btn btn-primary">Registrarse</button>
     </form>
   );
-};
-
-export default Register;
+}

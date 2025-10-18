@@ -1,114 +1,60 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { CartContext } from "../context/CartContext";
 import { UserContext } from "../context/UserContext";
-import "../components/cart.css";
 
 const clp = (n) => n.toLocaleString("es-CL");
 
-const Cart = () => {
-  const { cart, setCart } = useContext(CartContext);
-  const { token } = useContext(UserContext);
+export default function Cart() {
+  const { cart, setCart, checkout } = useContext(CartContext);
+  const { isAuth } = useContext(UserContext);
+  const [msg, setMsg] = useState("");
 
-  const increase = (id) => {
-    setCart((prev) =>
-      prev.map((p) =>
-        p.id === id ? { ...p, qty: (p.qty ?? 1) + 1 } : p
-      )
-    );
+  const inc = (id) => setCart(x => x.map(p => p.id===id?{...p, qty:(p.qty??1)+1}:p));
+  const dec = (id) => setCart(x => x.map(p => p.id===id?{...p, qty:(p.qty??1)-1}:p).filter(p => (p.qty??1)>0));
+  const rmv = (id) => setCart(x => x.filter(p => p.id!==id));
+  const clr = () => setCart([]);
+
+  const total = cart.reduce((a,p)=>a+p.price*(p.qty??1),0);
+
+  const pagar = async () => {
+    const data = await checkout();          // { ok, orderId, message }
+    setMsg(data?.message || "Compra OK");
+    clr();
   };
-
-  const decrease = (id) => {
-    setCart((prev) =>
-      prev
-        .map((p) =>
-          p.id === id ? { ...p, qty: (p.qty ?? 1) - 1 } : p
-        )
-        .filter((p) => (p.qty ?? 1) > 0)
-    );
-  };
-
-  const remove = (id) => {
-    setCart((prev) => prev.filter((p) => p.id !== id));
-  };
-
-  const clear = () => setCart([]);
-
-  const total = cart.reduce((acc, p) => acc + p.price * (p.qty ?? 1), 0);
 
   if (!cart.length) {
     return (
-      <div className="container py-4 cart-page">
-        <h2 className="mb-3">Tu carrito</h2>
-        <p>No tienes productos en el carrito.</p>
+      <div className="container py-4">
+        <h2>Tu carrito</h2>
+        <p>Sin productos.</p>
       </div>
     );
   }
 
   return (
-    <div className="container py-4 cart-page">
-      <h2 className="mb-3">Tu carrito</h2>
+    <div className="container py-4">
+      <h2>Tu carrito</h2>
+      {msg && <p style={{color:"green"}}>{msg}</p>}
 
-      {cart.map((p) => (
-        <div key={p.id} className="cart-row">
-          {p.img && (
-            <img
-              src={p.img}
-              alt={p.name}
-              width={72}
-              height={72}
-              className="cart-thumb"
-            />
-          )}
-
-          <div className="cart-name">{p.name}</div>
-
-          <div className="cart-qty">
-            <button
-              className="qty-btn qty-btn--minus"
-              onClick={() => decrease(p.id)}
-              aria-label={`Disminuir ${p.name}`}
-            >
-              −
-            </button>
-            <div className="qty-box">{p.qty ?? 1}</div>
-            <button
-              className="qty-btn qty-btn--plus"
-              onClick={() => increase(p.id)}
-              aria-label={`Aumentar ${p.name}`}
-            >
-              +
-            </button>
+      {cart.map(p=>(
+        <div key={p.id} className="d-flex align-items-center gap-2 my-2">
+          {p.img && <img src={p.img} alt={p.name} width={60} height={60} />}
+          <div className="me-auto">{p.name}</div>
+          <div className="d-flex align-items-center gap-2">
+            <button onClick={()=>dec(p.id)}>−</button>
+            <div>{p.qty??1}</div>
+            <button onClick={()=>inc(p.id)}>+</button>
           </div>
-
-          <div className="cart-price">
-            ${clp(p.price * (p.qty ?? 1))}
-          </div>
-
-          <button
-            className="btn btn-sm btn-outline-danger"
-            onClick={() => remove(p.id)}
-            aria-label={`Eliminar ${p.name}`}
-          >
-            🗑️ Quitar
-          </button>
+          <div>${clp(p.price*(p.qty??1))}</div>
+          <button className="btn btn-sm btn-outline-danger" onClick={()=>rmv(p.id)}>Quitar</button>
         </div>
       ))}
 
-      <div className="d-flex justify-content-between align-items-center mt-4 gap-2">
-        <button className="btn btn-outline-secondary" onClick={clear}>
-          Vaciar carrito
-        </button>
-        <h4 className="m-0">Total: ${clp(total)}</h4>
-        <button
-          className="btn btn-primary"
-          disabled={!token}                       //  deshabilita si no hay token
-          title={token ? "" : "Inicia sesión para pagar"}
-        >
-          💳 Pagar
-        </button>
+      <div className="d-flex justify-content-between align-items-center mt-3">
+        <button className="btn btn-outline-secondary" onClick={clr}>Vaciar</button>
+        <h4>Total: ${clp(total)}</h4>
+        <button className="btn btn-primary" disabled={!isAuth} onClick={pagar}>Pagar</button>
       </div>
     </div>
   );
-};
-
-export default Cart;
+}

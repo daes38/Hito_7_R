@@ -1,16 +1,16 @@
-import { createContext, useState } from "react";
+import { createContext, useMemo, useState } from "react";
+import api from "../api/axios";
 
 export const CartContext = createContext();
 
-const CartProvider = ({ children }) => {
-  // Array de productos en el carrito
+export default function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
 
-  return (
-    <CartContext.Provider value={{ cart, setCart }}>
-      {children}
-    </CartContext.Provider>
-  );
-};
+  const checkout = async () => {
+    const { data } = await api.post("/checkouts", { cart }); // protegido por Bearer automáticamente
+    return data; // { ok, orderId, message }
+  };
 
-export default CartProvider;
+  const value = useMemo(() => ({ cart, setCart, checkout }), [cart]);
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+}
